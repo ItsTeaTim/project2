@@ -53,6 +53,7 @@ int main() {
   form_iterator nv = cgi.getElement("num_verse");
 
   // Convert and check input data
+
   bool validInput = false;
   if (chapter != cgi.getElements().end()) {
 	 int chapterNum = chapter->getIntegerValue();
@@ -85,13 +86,46 @@ int main() {
   /* TO DO: PUT CODE HERE TO CALL YOUR BIBLE CLASS FUNCTIONS
    *        TO LOOK UP THE REQUESTED VERSES
    */
-  int bookResult = book->getIntegerValue();
+  int bookResult = book->getIntegerValue();			
   int chapResult = chapter->getIntegerValue();
   int verseResult = verse->getIntegerValue();
+  int numVerses = nv->getIntegerValue();
+
+  if (numVerses <= 0) {			// If the number of verses is empty, set it to 1
+	  numVerses = 0;
+  }
+
+  bool validBook = false;
+  string bookName = "";
+  if (bookResult <= 66 && bookResult >= 1)
+  {
+	 validBook = true;
+	 bookName = books[bookResult];
+  }
+  else {
+	  validBook == false;
+  }
 
   Ref ref = Ref(bookResult, chapResult, verseResult);
   LookupResult result;
   Verse lookVerse = webBible.lookup(ref, result);
+  string err = webBible.error(result);
+
+  if (err == "Error: no valid book found") {
+	  validBook = false;
+	  cout << "<b>"  << err << "</b>"  << endl;
+  }
+  else if (err == "Error: no valid chapter found") {
+	  validInput = false;
+	  cout << "<b>" << err << "</b>" << endl;
+  }
+  else if (err == "Error: no valid verse found") {
+	  validVerse = false;
+	  cout << "<b>" << err << "</b>" << endl;
+  }
+  else if (err == "Error: other issue occurred") {
+	  cout << "<b>" << err << "</b>" << endl;
+  }
 
   /* SEND BACK THE RESULTS
    * Finally we send the result back to the client on the standard output stream
@@ -99,14 +133,22 @@ int main() {
    * This string will be inserted as is inside a container on the web page, 
    * so we must include HTML formatting commands to make things look presentable!
    */
-  if (validInput) {
+  if (validBook  && validInput && validVerse) {
 	cout << "Search Type: <b>" << **st << "</b>" << endl;
 	cout << "<p>Your result: "
-		 << **book << " " << **chapter << ":" << **verse 
+		 << bookName << " " << chapResult << ":" << verseResult 
 		 << "<p> <em>" << lookVerse.getVerse() << "</em> </p>" << endl;
-  }
-  else {
-	  cout << "<p>Invalid Input: <em>report the more specific problem.</em></p>" << endl;
+
+	for (int i = 0; i < numVerses - 1; i++) {				// For additional verses
+		lookVerse = webBible.nextVerse(result);
+		bookResult = lookVerse.getRef().getBook();    // Update data
+		bookName = books[bookResult];
+		chapResult = lookVerse.getRef().getChap();
+		verseResult = lookVerse.getRef().getVerse();
+
+		cout << "<p>" << bookName << " " << chapResult << ":" << verseResult
+			<< "<p> <em>" << lookVerse.getVerse() << "</em> </p>" << endl;
+	}
   }
   return 0;
 }

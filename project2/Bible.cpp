@@ -70,13 +70,12 @@ Verse Bible::nextVerse(LookupResult& status) {
 		status = SUCCESS;
 		return next;
 	}
-	else {
+	while (!instream.eof()) {
 		getline(instream, nextLine);
 		next = Verse(nextLine);
 		status = SUCCESS;
 		return next;
 	}
-	
 }
 
 // REQUIRED: Return an error message string to describe status
@@ -96,10 +95,6 @@ string Bible::error(LookupResult status) {
 	}
 	else if (status == OTHER) {
 		err = "Error: other issue occurred";
-		return err;
-	}
-	else {
-		err = "Uh oh";
 		return err;
 	}
 }

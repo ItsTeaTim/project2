@@ -11,6 +11,7 @@
 #include <string> 
 #include <stdlib.h>
 #include "Ref.h"
+#include <vector>
 using namespace std;
 
 class Verse {
